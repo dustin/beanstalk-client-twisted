@@ -80,12 +80,8 @@ class Beanstalk(basic.LineReceiver):
         self._current.append(cmdObj)
         return cmdObj._deferred
 
-    def stats(self, arg=None):
-        if arg:
-            cmd="stats " + arg
-        else:
-            cmd="stats"
-        return self.__cmd('stats', cmd)
+    def stats(self):
+        return self.__cmd('stats', 'stats')
 
     def use(self, tube):
         return self.__cmd('use', 'use %s' % tube, tube=tube)
