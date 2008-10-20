@@ -227,49 +227,42 @@ class Beanstalk(basic.LineReceiver):
         cmd.length = self._lenExpected
         self.setRawMode()
 
-    def cmd_TIMED_OUT(self):
+    def __error(self, type):
         cmd = self._current.popleft()
-        cmd.fail(TimedOut())
+        cmd.fail(type())
+
+    def cmd_TIMED_OUT(self):
+        self.__error(TimedOut)
 
     def cmd_NOT_FOUND(self):
-        cmd = self._current.popleft()
-        cmd.fail(NotFound())
+        self.__error(NotFound)
 
     def cmd_BAD_FORMAT(self):
-        cmd = self._current.popleft()
-        cmd.fail(BadFormat())
+        self.__error(BadFormat)
 
     def cmd_INTERNAL_ERROR(self):
-        cmd = self._current.popleft()
-        cmd.fail(InternalError())
+        self.__error(InternalError)
 
     def cmd_DRAINING(self):
-        cmd = self._current.popleft()
-        cmd.fail(Draining())
+        self.__error(Draining)
 
     def cmd_UNKNOWN_COMMAND(self):
-        cmd = self._current.popleft()
-        cmd.fail(UnknownCommand())
+        self.__error(UnknownCommand)
 
     def cmd_OUT_OF_MEMORY(self):
-        cmd = self._current.popleft()
-        cmd.fail(OutOfMemory())
+        self.__error(OutOfMemory)
 
     def cmd_EXPECTED_CRLF(self):
-        cmd = self._current.popleft()
-        cmd.fail(ExpectedCRLF())
+        self.__error(ExpectedCRLF)
 
     def cmd_JOB_TOO_BIG(self):
-        cmd = self._current.popleft()
-        cmd.fail(JobTooBig())
+        self.__error(JobTooBig)
 
     def cmd_DEADLINE_SOON(self):
-        cmd = self._current.popleft()
-        cmd.fail(DeadlineSoon())
+        self.__error(DeadlineSoon)
 
     def cmd_NOT_IGNORED(self):
-        cmd = self._current.popleft()
-        cmd.fail(NotIgnored())
+        self.__error(NotIgnored)
 
     def lineReceived(self, line):
         """
