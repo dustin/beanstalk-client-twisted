@@ -99,6 +99,7 @@ def runCommands(bs):
     run(success, bs.ignore, "tv")
     run(success, bs.watch, "crack")
     run(bs.put, 8192, 0, 300, 'This is a job', callback=jobCallbacks(bs))
+    run(success, bs.peek_ready)
     def releaseJob(j):
         id, job=j
         success_print(None)
@@ -109,6 +110,7 @@ def runCommands(bs):
         success_print(None)
         return success(bs.bury, id, 1024)
     run(bs.reserve, 1, callback=buryJob, errback=print_cb("r-n-b error"))
+    run(success, bs.peek_buried)
     run(bs.kick, 1)
     def runJob(j):
         id, job=j
@@ -116,6 +118,7 @@ def runCommands(bs):
         return success(bs.delete, id)
     run(bs.reserve, 1, callback=runJob)
     run(failure, bs.reserve, 1)
+    run(failure, bs.peek_delayed)
     run(listChecker, bs.list_tubes, ['default', 'crack'])
     run(listChecker, bs.list_tubes_watched, ['default', 'crack'])
     run(valueChecker, bs.used_tube, 'crack')

@@ -57,6 +57,8 @@ class Command(object):
 
 class TimedOut(Exception): pass
 
+class NotFound(Exception): pass
+
 class Beanstalk(basic.LineReceiver):
 
     def __init__(self):
@@ -133,6 +135,15 @@ class Beanstalk(basic.LineReceiver):
     def peek(self, id):
         return self.__cmd('peek', 'peek %d' % id)
 
+    def peek_ready(self):
+        return self.__cmd('peek-ready', 'peek-ready')
+
+    def peek_delayed(self):
+        return self.__cmd('peek-delayed', 'peek-delayed')
+
+    def peek_buried(self):
+        return self.__cmd('peek-buried', 'peek-buried')
+
     def cmd_USING(self, line):
         cmd = self._current.popleft()
         cmd.success(line)
@@ -195,6 +206,10 @@ class Beanstalk(basic.LineReceiver):
         cmd = self._current.popleft()
         cmd.fail(TimedOut())
 
+    def cmd_NOT_FOUND(self):
+        cmd = self._current.popleft()
+        cmd.fail(NotFound())
+
     def lineReceived(self, line):
         """
         Receive line commands from the server.
@@ -237,7 +252,8 @@ class Beanstalk(basic.LineReceiver):
                 cmd.success(self.parseStats(cmd.value))
             elif cmd.command == 'reserve':
                 cmd.success((cmd.id, cmd.value))
-            elif cmd.command == 'peek':
+            elif cmd.command in ['peek', 'peek-ready',
+                'peek-delayed', 'peek-buried']:
                 cmd.success((cmd.id, cmd.value))
             elif cmd.command in ['list-tubes', 'list-tubes-watched']:
                 cmd.success(self.parseList(cmd.value))

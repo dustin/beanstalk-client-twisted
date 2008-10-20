@@ -12,10 +12,6 @@ Exceptions:
   NotIgnored
 
 Commands:
-  peek-ready
-  peek-buried
-  peek-delayed
-
   stats-job
   int-stats-job
   stats-tube
