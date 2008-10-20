@@ -54,6 +54,20 @@ def failure(f, *args):
     testDeferreds.append(rv)
     return rv
 
+def listChecker(cmd, expected):
+    def f(v):
+        hasAll = True
+        for i in expected:
+            if not i in v:
+                hasAll = False
+        if hasAll:
+            sys.stdout.write(".")
+        else:
+            sys.stdout.write("E")
+            failures.append((cmd, "missing an expected element in " + `v`))
+    rv=cmd().addCallback(f)
+    return rv
+
 def runCommands(bs):
     success(bs.stats)
     success(bs.use, "crack")
@@ -67,6 +81,7 @@ def runCommands(bs):
         return success(bs.delete, id)
     bs.reserve(1).addCallback(runJob)
     failure(bs.reserve, 1)
+    listChecker(bs.list_tubes, ['default', 'crack'])
 
     dl=defer.DeferredList(testDeferreds)
     def done(v):

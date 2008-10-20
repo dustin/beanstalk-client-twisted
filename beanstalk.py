@@ -112,6 +112,9 @@ class Beanstalk(basic.LineReceiver):
     def delete(self, job):
         return self.__cmd('delete', 'delete %d' % job)
 
+    def list_tubes(self):
+        return self.__cmd('list-tubes', 'list-tubes')
+
     def cmd_USING(self, line):
         cmd = self._current.popleft()
         cmd.success(line)
@@ -172,6 +175,10 @@ class Beanstalk(basic.LineReceiver):
         lines=v.strip().split("\n")[1:]
         return dict([l.split(": ") for l in lines])
 
+    def parseList(self, v):
+        lines=v.strip().split("\n")[1:]
+        return [l[2:] for l in lines]
+
     def rawDataReceived(self, data):
         self._getBuffer.append(data)
         self._bufferLength += len(data)
@@ -190,6 +197,8 @@ class Beanstalk(basic.LineReceiver):
                 cmd.success(self.parseStats(cmd.value))
             elif cmd.command == 'reserve':
                 cmd.success((cmd.id, cmd.value))
+            elif cmd.command == 'list-tubes':
+                cmd.success(self.parseList(cmd.value))
 
             self.setLineMode(rem)
 

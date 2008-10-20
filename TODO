@@ -12,7 +12,6 @@ Exceptions:
   NotIgnored
 
 Commands:
-  list-tubes
   list-tubes-watched
   used-tube
 
