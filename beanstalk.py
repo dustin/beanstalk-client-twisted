@@ -124,6 +124,12 @@ class Beanstalk(basic.LineReceiver):
     def release(self, job, pri, delay):
         return self.__cmd('release', 'release %d %d %d' % (job, pri, delay))
 
+    def bury(self, job, pri):
+        return self.__cmd('bury', 'bury %d %d' % (job, pri))
+
+    def kick(self, bound):
+        return self.__cmd('kick', 'kick %d' % bound)
+
     def cmd_USING(self, line):
         cmd = self._current.popleft()
         cmd.success(line)
@@ -132,11 +138,19 @@ class Beanstalk(basic.LineReceiver):
         cmd = self._current.popleft()
         cmd.success(int(line))
 
+    def cmd_KICKED(self, line):
+        cmd = self._current.popleft()
+        cmd.success(int(line))
+
     def cmd_DELETED(self):
         cmd = self._current.popleft()
         cmd.success(None)
 
     def cmd_RELEASED(self):
+        cmd = self._current.popleft()
+        cmd.success(None)
+
+    def cmd_BURIED(self):
         cmd = self._current.popleft()
         cmd.success(None)
 

@@ -12,8 +12,6 @@ Exceptions:
   NotIgnored
 
 Commands:
-  bury
-  kick
   peek
   peek-ready
   peek-buried
