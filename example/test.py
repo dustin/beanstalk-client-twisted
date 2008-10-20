@@ -82,6 +82,7 @@ def runCommands(bs):
     bs.reserve(1).addCallback(runJob)
     failure(bs.reserve, 1)
     listChecker(bs.list_tubes, ['default', 'crack'])
+    listChecker(bs.list_tubes_watched, ['default', 'crack'])
 
     dl=defer.DeferredList(testDeferreds)
     def done(v):

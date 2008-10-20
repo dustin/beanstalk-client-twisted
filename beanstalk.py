@@ -115,6 +115,9 @@ class Beanstalk(basic.LineReceiver):
     def list_tubes(self):
         return self.__cmd('list-tubes', 'list-tubes')
 
+    def list_tubes_watched(self):
+        return self.__cmd('list-tubes-watched', 'list-tubes-watched')
+
     def cmd_USING(self, line):
         cmd = self._current.popleft()
         cmd.success(line)
@@ -197,7 +200,7 @@ class Beanstalk(basic.LineReceiver):
                 cmd.success(self.parseStats(cmd.value))
             elif cmd.command == 'reserve':
                 cmd.success((cmd.id, cmd.value))
-            elif cmd.command == 'list-tubes':
+            elif cmd.command in ['list-tubes', 'list-tubes-watched']:
                 cmd.success(self.parseList(cmd.value))
 
             self.setLineMode(rem)
