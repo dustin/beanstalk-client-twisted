@@ -86,15 +86,22 @@ def runGenerator():
             d.addErrback(kwargs['errback'])
         yield d
 
+def jobStats(bs, id):
+    def f(x):
+        return bs.stats_job(id).addCallback(success_print).addErrback(
+            handle_failure("job_stats"))
+    return f
+
 def jobCallbacks(bs):
     def f(i):
         return bs.peek(i).addCallback(success_print).addErrback(
-            handle_failure("peek"))
+            handle_failure("peek")).addBoth(jobStats(bs, i))
     return f
 
 def runCommands(bs):
     run(success, bs.stats)
     run(success, bs.use, "crack")
+    run(success, bs.stats_tube, "crack")
     run(success, bs.watch, "tv")
     run(success, bs.ignore, "tv")
     run(success, bs.watch, "crack")

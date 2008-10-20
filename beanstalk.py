@@ -83,6 +83,12 @@ class Beanstalk(basic.LineReceiver):
     def stats(self):
         return self.__cmd('stats', 'stats')
 
+    def stats_job(self, id):
+        return self.__cmd('stats-job', 'stats-job %d' % id)
+
+    def stats_tube(self, name):
+        return self.__cmd('stats-tube', 'stats-tube %s' % name)
+
     def use(self, tube):
         return self.__cmd('use', 'use %s' % tube, tube=tube)
 
@@ -244,10 +250,10 @@ class Beanstalk(basic.LineReceiver):
             cmd = self._current[0]
             cmd.value = val
             x = self._current.popleft()
-            if cmd.command == "stats":
-                cmd.success(self.parseStats(cmd.value))
-            elif cmd.command == 'reserve':
+            if cmd.command == 'reserve':
                 cmd.success((cmd.id, cmd.value))
+            elif cmd.command in ['stats', 'stats-job', 'stats-tube']:
+                cmd.success(self.parseStats(cmd.value))
             elif cmd.command in ['peek', 'peek-ready',
                 'peek-delayed', 'peek-buried']:
                 cmd.success((cmd.id, cmd.value))
