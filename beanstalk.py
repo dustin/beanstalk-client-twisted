@@ -118,6 +118,9 @@ class Beanstalk(basic.LineReceiver):
     def list_tubes_watched(self):
         return self.__cmd('list-tubes-watched', 'list-tubes-watched')
 
+    def used_tube(self):
+        return self.__cmd('list-tube-used', 'list-tube-used')
+
     def cmd_USING(self, line):
         cmd = self._current.popleft()
         cmd.success(line)

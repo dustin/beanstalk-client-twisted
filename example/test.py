@@ -68,6 +68,16 @@ def listChecker(cmd, expected):
     rv=cmd().addCallback(f)
     return rv
 
+def valueChecker(cmd, expected, *args):
+    def f(v):
+        if v == expected:
+            sys.stdout.write(".")
+        else:
+            sys.stdout.write("E")
+            failures.append((cmd, "expected %s == %s" % (`v`, `expected`)))
+    rv=cmd(*args).addCallback(f)
+    return rv
+
 def runCommands(bs):
     success(bs.stats)
     success(bs.use, "crack")
@@ -83,6 +93,7 @@ def runCommands(bs):
     failure(bs.reserve, 1)
     listChecker(bs.list_tubes, ['default', 'crack'])
     listChecker(bs.list_tubes_watched, ['default', 'crack'])
+    valueChecker(bs.used_tube, 'crack')
 
     dl=defer.DeferredList(testDeferreds)
     def done(v):

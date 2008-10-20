@@ -12,8 +12,6 @@ Exceptions:
   NotIgnored
 
 Commands:
-  used-tube
-
   release
   bury
   kick
