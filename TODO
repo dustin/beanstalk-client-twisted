@@ -1,5 +1,4 @@
 Exceptions:
-  Buried(int)
   ExpectedCRLF
   JobTooBig
   DeadlineSoon

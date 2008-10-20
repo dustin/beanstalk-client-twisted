@@ -93,7 +93,8 @@ def jobStats(bs, id):
     return f
 
 def jobCallbacks(bs):
-    def f(i):
+    def f(stuff):
+        inserted, i=stuff
         return bs.peek(i).addCallback(success_print).addErrback(
             handle_failure("peek")).addBoth(jobStats(bs, i))
     return f

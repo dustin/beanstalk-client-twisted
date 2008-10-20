@@ -164,7 +164,7 @@ class Beanstalk(basic.LineReceiver):
 
     def cmd_INSERTED(self, line):
         cmd = self._current.popleft()
-        cmd.success(int(line))
+        cmd.success((True, int(line)))
 
     def cmd_KICKED(self, line):
         cmd = self._current.popleft()
@@ -178,9 +178,12 @@ class Beanstalk(basic.LineReceiver):
         cmd = self._current.popleft()
         cmd.success(None)
 
-    def cmd_BURIED(self):
+    def cmd_BURIED(self, *args):
         cmd = self._current.popleft()
-        cmd.success(None)
+        if args:
+            cmd.success((False, int(args[0])))
+        else:
+            cmd.success(None)
 
     def cmd_WATCHING(self, line):
         cmd = self._current.popleft()
