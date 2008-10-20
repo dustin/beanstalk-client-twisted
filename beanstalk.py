@@ -75,6 +75,8 @@ class ExpectedCRLF(Exception): pass
 
 class JobTooBig(Exception): pass
 
+class DeadlineSoon(Exception): pass
+
 class Beanstalk(basic.LineReceiver):
 
     def __init__(self):
@@ -258,6 +260,10 @@ class Beanstalk(basic.LineReceiver):
     def cmd_JOB_TOO_BIG(self):
         cmd = self._current.popleft()
         cmd.fail(JobTooBig())
+
+    def cmd_DEADLINE_SOON(self):
+        cmd = self._current.popleft()
+        cmd.fail(DeadlineSoon())
 
     def lineReceived(self, line):
         """
