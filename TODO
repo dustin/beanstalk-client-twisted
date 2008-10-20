@@ -13,7 +13,5 @@ Exceptions:
 
 Commands:
   stats-job
-  int-stats-job
   stats-tube
-  int-stats-tube
 
