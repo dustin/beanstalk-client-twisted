@@ -92,9 +92,21 @@ class Beanstalk(basic.LineReceiver):
     def ignore(self, tube):
         return self.__cmd('ignore', 'ignore %s' % tube, tube=tube)
 
+    def put(self, pri, delay, ttr, data):
+        fullcmd = "put %d %d %d %d" % (pri, delay, ttr, len(data))
+        self.sendLine(fullcmd)
+        self.sendLine(data)
+        cmdObj = Command('put')
+        self._current.append(cmdObj)
+        return cmdObj._deferred
+
     def cmd_USING(self, line):
         cmd = self._current.popleft()
         cmd.success(line)
+
+    def cmd_INSERTED(self, line):
+        cmd = self._current.popleft()
+        cmd.success(int(line))
 
     def cmd_WATCHING(self, line):
         cmd = self._current.popleft()
