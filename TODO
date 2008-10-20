@@ -12,7 +12,6 @@ Exceptions:
   NotIgnored
 
 Commands:
-  peek
   peek-ready
   peek-buried
   peek-delayed

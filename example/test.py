@@ -86,13 +86,19 @@ def runGenerator():
             d.addErrback(kwargs['errback'])
         yield d
 
+def jobCallbacks(bs):
+    def f(i):
+        return bs.peek(i).addCallback(success_print).addErrback(
+            handle_failure("peek"))
+    return f
+
 def runCommands(bs):
     run(success, bs.stats)
     run(success, bs.use, "crack")
     run(success, bs.watch, "tv")
     run(success, bs.ignore, "tv")
     run(success, bs.watch, "crack")
-    run(success, bs.put, 8192, 0, 300, 'This is a job')
+    run(bs.put, 8192, 0, 300, 'This is a job', callback=jobCallbacks(bs))
     def releaseJob(j):
         id, job=j
         success_print(None)

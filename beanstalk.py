@@ -130,6 +130,9 @@ class Beanstalk(basic.LineReceiver):
     def kick(self, bound):
         return self.__cmd('kick', 'kick %d' % bound)
 
+    def peek(self, id):
+        return self.__cmd('peek', 'peek %d' % id)
+
     def cmd_USING(self, line):
         cmd = self._current.popleft()
         cmd.success(line)
@@ -171,6 +174,16 @@ class Beanstalk(basic.LineReceiver):
         i, length=line.split(' ')
         cmd=self._current[0]
         assert cmd.command == 'reserve'
+        cmd.id=int(i)
+        self._lenExpected = int(length)
+        self._getBuffer = []
+        self._bufferLength = 0
+        cmd.length = self._lenExpected
+        self.setRawMode()
+
+    def cmd_FOUND(self, line):
+        i, length=line.split(' ')
+        cmd=self._current[0]
         cmd.id=int(i)
         self._lenExpected = int(length)
         self._getBuffer = []
@@ -223,6 +236,8 @@ class Beanstalk(basic.LineReceiver):
             if cmd.command == "stats":
                 cmd.success(self.parseStats(cmd.value))
             elif cmd.command == 'reserve':
+                cmd.success((cmd.id, cmd.value))
+            elif cmd.command == 'peek':
                 cmd.success((cmd.id, cmd.value))
             elif cmd.command in ['list-tubes', 'list-tubes-watched']:
                 cmd.success(self.parseList(cmd.value))
