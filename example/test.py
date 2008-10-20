@@ -78,6 +78,7 @@ def valueChecker(cmd, expected, *args):
     rv=cmd(*args).addCallback(f)
     return rv
 
+
 def runCommands(bs):
     success(bs.stats)
     success(bs.use, "crack")
@@ -85,6 +86,11 @@ def runCommands(bs):
     success(bs.ignore, "tv")
     success(bs.watch, "crack")
     success(bs.put, 8192, 0, 300, 'This is a job')
+    def releaseJob(j):
+        id, job=j
+        success_print(None)
+        return success(bs.release, id, 1024, 0)
+    bs.reserve(1).addCallback(releaseJob)
     def runJob(j):
         id, job=j
         success_print(None)

@@ -121,6 +121,9 @@ class Beanstalk(basic.LineReceiver):
     def used_tube(self):
         return self.__cmd('list-tube-used', 'list-tube-used')
 
+    def release(self, job, pri, delay):
+        return self.__cmd('release', 'release %d %d %d' % (job, pri, delay))
+
     def cmd_USING(self, line):
         cmd = self._current.popleft()
         cmd.success(line)
@@ -130,6 +133,10 @@ class Beanstalk(basic.LineReceiver):
         cmd.success(int(line))
 
     def cmd_DELETED(self):
+        cmd = self._current.popleft()
+        cmd.success(None)
+
+    def cmd_RELEASED(self):
         cmd = self._current.popleft()
         cmd.success(None)
 
