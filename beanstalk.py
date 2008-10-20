@@ -80,17 +80,20 @@ class Beanstalk(basic.LineReceiver):
         self._current.append(cmdObj)
         return cmdObj._deferred
 
-    def use(self, tube):
-        self.sendLine("use %s" % tube)
-        cmdObj = Command('use', tube=tube)
+    def __cmd(self, command, full_command, *args, **kwargs):
+        self.sendLine(full_command)
+        cmdObj = Command(command, **kwargs)
         self._current.append(cmdObj)
         return cmdObj._deferred
 
+    def use(self, tube):
+        return self.__cmd('use', 'use %s' % tube, tube=tube)
+
     def watch(self, tube):
-        self.sendLine("watch %s" % tube)
-        cmdObj = Command('watch', tube=tube)
-        self._current.append(cmdObj)
-        return cmdObj._deferred
+        return self.__cmd('watch', 'watch %s' % tube, tube=tube)
+
+    def ignore(self, tube):
+        return self.__cmd('ignore', 'ignore %s' % tube, tube=tube)
 
     def cmd_USING(self, line):
         cmd = self._current.popleft()
