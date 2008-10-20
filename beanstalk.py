@@ -39,6 +39,8 @@ class Command(object):
         for k, v in kwargs.items():
             setattr(self, k, v)
 
+    def __repr__(self):
+        return "<Command: %s>" % self.command
 
     def success(self, value):
         """
@@ -62,7 +64,6 @@ class Beanstalk(basic.LineReceiver):
         self._bufferLength = None
 
     def rawDataRecevied(self, data):
-        print "Received raw data:", data
         self.current_command=None
 
     def connectionMade(self):
@@ -70,7 +71,6 @@ class Beanstalk(basic.LineReceiver):
         self.setLineMode()
 
     def stats(self, arg=None):
-        print "Getting stats."
         if arg:
             cmd="stats " + arg
         else:
@@ -79,6 +79,16 @@ class Beanstalk(basic.LineReceiver):
         cmdObj = Command('stats')
         self._current.append(cmdObj)
         return cmdObj._deferred
+
+    def use(self, tube):
+        self.sendLine("use %s" % tube)
+        cmdObj = Command('use', tube=tube)
+        self._current.append(cmdObj)
+        return cmdObj._deferred
+
+    def cmd_USING(self, line):
+        cmd = self._current.popleft()
+        cmd.success(line)
 
     def cmd_OK(self, line):
         cmd = self._current[0]
@@ -122,11 +132,11 @@ class Beanstalk(basic.LineReceiver):
             self._bufferLength = None
             cmd = self._current[0]
             cmd.value = val
-            self.setLineMode(rem)
-
-            cmd = self._current.popleft()
+            x = self._current.popleft()
             if cmd.command == "stats":
                 cmd.success(self.parseStats(cmd.value))
+
+            self.setLineMode(rem)
 
 class BeanstalkClientFactory(protocol.ClientFactory):
     def startedConnecting(self, connector):
