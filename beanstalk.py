@@ -81,6 +81,13 @@ class NotIgnored(Exception): pass
 
 class Beanstalk(basic.LineReceiver):
 
+    __ERRORS={'TIMED_OUT': TimedOut, 'NOT_FOUND': NotFound,
+        'BAD_FORMAT': BadFormat, 'INTERNAL_ERROR': InternalError,
+        'DRAINING': Draining, 'UNKNOWN_COMMAND': UnknownCommand,
+        'OUT_OF_MEMORY': OutOfMemory, 'EXPECTED_CRLF': ExpectedCRLF,
+        'JOB_TOO_BIG': JobTooBig, 'DEADLINE_SOON': DeadlineSoon,
+        'NOT_IGNORED': NotIgnored}
+
     def __init__(self):
         self._current = deque()
         self._lenExpected = None
@@ -227,48 +234,16 @@ class Beanstalk(basic.LineReceiver):
         cmd.length = self._lenExpected
         self.setRawMode()
 
-    def __error(self, type):
-        cmd = self._current.popleft()
-        cmd.fail(type())
-
-    def cmd_TIMED_OUT(self):
-        self.__error(TimedOut)
-
-    def cmd_NOT_FOUND(self):
-        self.__error(NotFound)
-
-    def cmd_BAD_FORMAT(self):
-        self.__error(BadFormat)
-
-    def cmd_INTERNAL_ERROR(self):
-        self.__error(InternalError)
-
-    def cmd_DRAINING(self):
-        self.__error(Draining)
-
-    def cmd_UNKNOWN_COMMAND(self):
-        self.__error(UnknownCommand)
-
-    def cmd_OUT_OF_MEMORY(self):
-        self.__error(OutOfMemory)
-
-    def cmd_EXPECTED_CRLF(self):
-        self.__error(ExpectedCRLF)
-
-    def cmd_JOB_TOO_BIG(self):
-        self.__error(JobTooBig)
-
-    def cmd_DEADLINE_SOON(self):
-        self.__error(DeadlineSoon)
-
-    def cmd_NOT_IGNORED(self):
-        self.__error(NotIgnored)
 
     def lineReceived(self, line):
         """
         Receive line commands from the server.
         """
         token = line.split(" ", 1)[0]
+        if self.__ERRORS.has_key(token):
+            cmd = self._current.popleft()
+            cmd.fail(self.__ERRORS[token]())
+            return
         # First manage standard commands without space
         cmd = getattr(self, "cmd_%s" % (token,), None)
         if cmd is not None:
