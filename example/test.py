@@ -11,9 +11,6 @@ import beanstalk
 
 failures=[]
 
-d=protocol.ClientCreator(reactor, beanstalk.Beanstalk).connectTCP(
-    sys.argv[1], 11300)
-
 def print_cb(name):
     def f(val):
         print name, `val`
@@ -131,6 +128,11 @@ def runCommands(bs):
     doneDeferred.addCallback(done)
     coop.coiterate(runGenerator(), doneDeferred=doneDeferred)
 
+#
+# The weekend starts here.
+#
+d=protocol.ClientCreator(reactor, beanstalk.Beanstalk).connectTCP(
+    sys.argv[1], 11300)
 d.addCallback(runCommands)
 
 reactor.run()
