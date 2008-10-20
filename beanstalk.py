@@ -100,6 +100,13 @@ class Beanstalk(basic.LineReceiver):
         self._current.append(cmdObj)
         return cmdObj._deferred
 
+    def reserve(self, timeout=None):
+        if timeout:
+            cmd="reserve-with-timeout %d" % timeout
+        else:
+            cmd="reserve"
+        return self.__cmd('reserve', cmd)
+
     def cmd_USING(self, line):
         cmd = self._current.popleft()
         cmd.success(line)
@@ -115,6 +122,17 @@ class Beanstalk(basic.LineReceiver):
     def cmd_OK(self, line):
         cmd = self._current[0]
         length = line
+        self._lenExpected = int(length)
+        self._getBuffer = []
+        self._bufferLength = 0
+        cmd.length = self._lenExpected
+        self.setRawMode()
+
+    def cmd_RESERVED(self, line):
+        i, length=line.split(' ')
+        cmd=self._current[0]
+        assert cmd.command == 'reserve'
+        cmd.id=int(i)
         self._lenExpected = int(length)
         self._getBuffer = []
         self._bufferLength = 0
@@ -157,6 +175,9 @@ class Beanstalk(basic.LineReceiver):
             x = self._current.popleft()
             if cmd.command == "stats":
                 cmd.success(self.parseStats(cmd.value))
+            elif cmd.command == 'reserve':
+                print "Finished reserve:", cmd.id, cmd.value
+                cmd.success((cmd.id, cmd.value))
 
             self.setLineMode(rem)
 
