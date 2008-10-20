@@ -189,7 +189,6 @@ class Beanstalk(basic.LineReceiver):
             if cmd.command == "stats":
                 cmd.success(self.parseStats(cmd.value))
             elif cmd.command == 'reserve':
-                print "Finished reserve:", cmd.id, cmd.value
                 cmd.success((cmd.id, cmd.value))
 
             self.setLineMode(rem)
