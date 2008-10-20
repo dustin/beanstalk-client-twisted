@@ -173,67 +173,52 @@ class Beanstalk(basic.LineReceiver):
     def peek_buried(self):
         return self.__cmd('peek-buried', 'peek-buried')
 
-    def cmd_USING(self, line):
+    def __success(self, val):
         cmd = self._current.popleft()
-        cmd.success(line)
+        cmd.success(val)
+
+    def __int_success(self, val): self.__success(int(val))
+
+    def __null_success(self): self.__success(None)
+
+    cmd_USING = __success
+
+    cmd_KICKED = __int_success
+
+    cmd_DELETED = __null_success
+
+    cmd_RELEASED = __null_success
+
+    cmd_WATCHING = __int_success
 
     def cmd_INSERTED(self, line):
-        cmd = self._current.popleft()
-        cmd.success((True, int(line)))
-
-    def cmd_KICKED(self, line):
-        cmd = self._current.popleft()
-        cmd.success(int(line))
-
-    def cmd_DELETED(self):
-        cmd = self._current.popleft()
-        cmd.success(None)
-
-    def cmd_RELEASED(self):
-        cmd = self._current.popleft()
-        cmd.success(None)
+        self.__success((True, int(line)))
 
     def cmd_BURIED(self, *args):
-        cmd = self._current.popleft()
         if args:
-            cmd.success((False, int(args[0])))
+            self.__success((False, int(args[0])))
         else:
-            cmd.success(None)
+            self.__success(None)
 
-    def cmd_WATCHING(self, line):
-        cmd = self._current.popleft()
-        cmd.success(int(line))
+    def __blob_response(self, cmd, length):
+        self._lenExpected = length
+        self._getBuffer = []
+        self._bufferLength = 0
+        cmd.length = self._lenExpected
+        self.setRawMode()
 
     def cmd_OK(self, line):
-        cmd = self._current[0]
-        length = line
-        self._lenExpected = int(length)
-        self._getBuffer = []
-        self._bufferLength = 0
-        cmd.length = self._lenExpected
-        self.setRawMode()
+        self.__blob_response(self._current[0], int(line))
 
-    def cmd_RESERVED(self, line):
-        i, length=line.split(' ')
-        cmd=self._current[0]
-        assert cmd.command == 'reserve'
-        cmd.id=int(i)
-        self._lenExpected = int(length)
-        self._getBuffer = []
-        self._bufferLength = 0
-        cmd.length = self._lenExpected
-        self.setRawMode()
-
-    def cmd_FOUND(self, line):
+    def __parse_job_response(self, line):
         i, length=line.split(' ')
         cmd=self._current[0]
         cmd.id=int(i)
-        self._lenExpected = int(length)
-        self._getBuffer = []
-        self._bufferLength = 0
-        cmd.length = self._lenExpected
-        self.setRawMode()
+        self.__blob_response(cmd, int(length))
 
+    cmd_RESERVED = __parse_job_response
+
+    cmd_FOUND = __parse_job_response
 
     def lineReceived(self, line):
         """
