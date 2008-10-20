@@ -71,6 +71,8 @@ class UnknownCommand(Exception): pass
 
 class OutOfMemory(Exception): pass
 
+class ExpectedCRLF(Exception): pass
+
 class Beanstalk(basic.LineReceiver):
 
     def __init__(self):
@@ -246,6 +248,10 @@ class Beanstalk(basic.LineReceiver):
     def cmd_OUT_OF_MEMORY(self):
         cmd = self._current.popleft()
         cmd.fail(OutOfMemory())
+
+    def cmd_EXPECTED_CRLF(self):
+        cmd = self._current.popleft()
+        cmd.fail(ExpectedCRLF())
 
     def lineReceived(self, line):
         """

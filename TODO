@@ -1,5 +1,4 @@
 Exceptions:
-  ExpectedCRLF
   JobTooBig
   DeadlineSoon
   NotIgnored
