@@ -181,20 +181,20 @@ class Beanstalk(basic.LineReceiver):
 
     def __null_success(self): self.__success(None)
 
-    cmd_USING = __success
+    _cmd_USING = __success
 
-    cmd_KICKED = __int_success
+    _cmd_KICKED = __int_success
 
-    cmd_DELETED = __null_success
+    _cmd_DELETED = __null_success
 
-    cmd_RELEASED = __null_success
+    _cmd_RELEASED = __null_success
 
-    cmd_WATCHING = __int_success
+    _cmd_WATCHING = __int_success
 
-    def cmd_INSERTED(self, line):
+    def _cmd_INSERTED(self, line):
         self.__success((True, int(line)))
 
-    def cmd_BURIED(self, *args):
+    def _cmd_BURIED(self, *args):
         if args:
             self.__success((False, int(args[0])))
         else:
@@ -207,7 +207,7 @@ class Beanstalk(basic.LineReceiver):
         cmd.length = self._lenExpected
         self.setRawMode()
 
-    def cmd_OK(self, line):
+    def _cmd_OK(self, line):
         self.__blob_response(self._current[0], int(line))
 
     def __parse_job_response(self, line):
@@ -216,9 +216,9 @@ class Beanstalk(basic.LineReceiver):
         cmd.id=int(i)
         self.__blob_response(cmd, int(length))
 
-    cmd_RESERVED = __parse_job_response
+    _cmd_RESERVED = __parse_job_response
 
-    cmd_FOUND = __parse_job_response
+    _cmd_FOUND = __parse_job_response
 
     def lineReceived(self, line):
         """
@@ -230,7 +230,7 @@ class Beanstalk(basic.LineReceiver):
             cmd.fail(self.__ERRORS[token]())
             return
         # First manage standard commands without space
-        cmd = getattr(self, "cmd_%s" % (token,), None)
+        cmd = getattr(self, "_cmd_%s" % (token,), None)
         if cmd is not None:
             args = line.split(" ", 1)[1:]
             if args:
@@ -241,11 +241,11 @@ class Beanstalk(basic.LineReceiver):
             pending = self._current.popleft()
             pending.fail(UnexpectedResponse(line))
 
-    def parseStats(self, v):
+    def __parseStats(self, v):
         lines=v.strip().split("\n")[1:]
         return dict([l.split(": ") for l in lines])
 
-    def parseList(self, v):
+    def __parseList(self, v):
         lines=v.strip().split("\n")[1:]
         return [l[2:] for l in lines]
 
@@ -266,12 +266,12 @@ class Beanstalk(basic.LineReceiver):
             if cmd.command == 'reserve':
                 cmd.success((cmd.id, cmd.value))
             elif cmd.command in ['stats', 'stats-job', 'stats-tube']:
-                cmd.success(self.parseStats(cmd.value))
+                cmd.success(self.__parseStats(cmd.value))
             elif cmd.command in ['peek', 'peek-ready',
                 'peek-delayed', 'peek-buried']:
                 cmd.success((cmd.id, cmd.value))
             elif cmd.command in ['list-tubes', 'list-tubes-watched']:
-                cmd.success(self.parseList(cmd.value))
+                cmd.success(self.__parseList(cmd.value))
 
             self.setLineMode(rem)
 
