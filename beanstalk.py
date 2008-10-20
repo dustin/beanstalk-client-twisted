@@ -107,6 +107,9 @@ class Beanstalk(basic.LineReceiver):
             cmd="reserve"
         return self.__cmd('reserve', cmd)
 
+    def delete(self, job):
+        return self.__cmd('delete', 'delete %d' % job)
+
     def cmd_USING(self, line):
         cmd = self._current.popleft()
         cmd.success(line)
@@ -114,6 +117,10 @@ class Beanstalk(basic.LineReceiver):
     def cmd_INSERTED(self, line):
         cmd = self._current.popleft()
         cmd.success(int(line))
+
+    def cmd_DELETED(self):
+        cmd = self._current.popleft()
+        cmd.success(None)
 
     def cmd_WATCHING(self, line):
         cmd = self._current.popleft()
