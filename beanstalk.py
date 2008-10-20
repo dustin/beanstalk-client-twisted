@@ -77,6 +77,8 @@ class JobTooBig(Exception): pass
 
 class DeadlineSoon(Exception): pass
 
+class NotIgnored(Exception): pass
+
 class Beanstalk(basic.LineReceiver):
 
     def __init__(self):
@@ -264,6 +266,10 @@ class Beanstalk(basic.LineReceiver):
     def cmd_DEADLINE_SOON(self):
         cmd = self._current.popleft()
         cmd.fail(DeadlineSoon())
+
+    def cmd_NOT_IGNORED(self):
+        cmd = self._current.popleft()
+        cmd.fail(NotIgnored())
 
     def lineReceived(self, line):
         """
