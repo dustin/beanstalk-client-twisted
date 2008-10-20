@@ -55,6 +55,8 @@ class Command(object):
         """
         self._deferred.errback(error)
 
+class UnexpectedResponse(Exception): pass
+
 class TimedOut(Exception): pass
 
 class NotFound(Exception): pass
@@ -226,7 +228,8 @@ class Beanstalk(basic.LineReceiver):
             else:
                 cmd()
         else:
-            print "Unknown response", `line`
+            pending = self._current.popleft()
+            pending.fail(UnexpectedResponse(line))
 
     def parseStats(self, v):
         lines=v.strip().split("\n")[1:]
