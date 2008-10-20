@@ -70,21 +70,18 @@ class Beanstalk(basic.LineReceiver):
         print "Connected!"
         self.setLineMode()
 
-    def stats(self, arg=None):
-        if arg:
-            cmd="stats " + arg
-        else:
-            cmd="stats"
-        self.sendLine(cmd)
-        cmdObj = Command('stats')
-        self._current.append(cmdObj)
-        return cmdObj._deferred
-
     def __cmd(self, command, full_command, *args, **kwargs):
         self.sendLine(full_command)
         cmdObj = Command(command, **kwargs)
         self._current.append(cmdObj)
         return cmdObj._deferred
+
+    def stats(self, arg=None):
+        if arg:
+            cmd="stats " + arg
+        else:
+            cmd="stats"
+        return self.__cmd('stats', cmd)
 
     def use(self, tube):
         return self.__cmd('use', 'use %s' % tube, tube=tube)
