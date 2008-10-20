@@ -86,9 +86,19 @@ class Beanstalk(basic.LineReceiver):
         self._current.append(cmdObj)
         return cmdObj._deferred
 
+    def watch(self, tube):
+        self.sendLine("watch %s" % tube)
+        cmdObj = Command('watch', tube=tube)
+        self._current.append(cmdObj)
+        return cmdObj._deferred
+
     def cmd_USING(self, line):
         cmd = self._current.popleft()
         cmd.success(line)
+
+    def cmd_WATCHING(self, line):
+        cmd = self._current.popleft()
+        cmd.success(int(line))
 
     def cmd_OK(self, line):
         cmd = self._current[0]
