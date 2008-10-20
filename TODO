@@ -1,0 +1,31 @@
+Exceptions:
+  UnexpectedResponse(string)
+  OutOfMemory
+  InternalError
+  Draining
+  BadFormat
+  UnknownCommand
+  Buried(int)
+  ExpectedCRLF
+  JobTooBig
+  DeadlineSoon
+  NotIgnored
+
+Commands:
+  list-tubes
+  list-tubes-watched
+  used-tube
+
+  release
+  bury
+  kick
+  peek
+  peek-ready
+  peek-buried
+  peek-delayed
+
+  stats-job
+  int-stats-job
+  stats-tube
+  int-stats-tube
+
