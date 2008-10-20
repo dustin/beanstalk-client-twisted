@@ -5,11 +5,10 @@ import sys
 sys.path.append("..")
 sys.path.append(os.path.join(sys.path[0], '..'))
 
-from twisted.internet import reactor, protocol, defer
+from twisted.internet import reactor, protocol, defer, task
 
 import beanstalk
 
-testDeferreds=[]
 failures=[]
 
 d=protocol.ClientCreator(reactor, beanstalk.Beanstalk).connectTCP(
@@ -43,16 +42,12 @@ def handle_unexpected_success(cmd):
     return f
 
 def success(f, *args):
-    rv = f(*args).addCallback(success_print).addErrback(
+    return f(*args).addCallback(success_print).addErrback(
         handle_failure(f.__name__))
-    testDeferreds.append(rv)
-    return rv
 
 def failure(f, *args):
-    rv = f(*args).addErrback(success_print).addCallback(
+    return f(*args).addErrback(success_print).addCallback(
         handle_unexpected_success(f.__name__))
-    testDeferreds.append(rv)
-    return rv
 
 def listChecker(cmd, expected):
     def f(v):
@@ -65,6 +60,7 @@ def listChecker(cmd, expected):
         else:
             sys.stdout.write("E")
             failures.append((cmd, "missing an expected element in " + `v`))
+        sys.stdout.flush()
     rv=cmd().addCallback(f)
     return rv
 
@@ -75,33 +71,52 @@ def valueChecker(cmd, expected, *args):
         else:
             sys.stdout.write("E")
             failures.append((cmd, "expected %s == %s" % (`v`, `expected`)))
+        sys.stdout.flush()
     rv=cmd(*args).addCallback(f)
     return rv
 
+torun = []
+
+def run(f, *args, **kwargs):
+    torun.append((f, args, kwargs))
+
+def runGenerator():
+    for (f, args, kwargs) in torun:
+        d=f(*args)
+        if 'callback' in kwargs:
+            d.addCallback(kwargs['callback'])
+        if 'errback' in kwargs:
+            d.addErrback(kwargs['errback'])
+        yield d
 
 def runCommands(bs):
-    success(bs.stats)
-    success(bs.use, "crack")
-    success(bs.watch, "tv")
-    success(bs.ignore, "tv")
-    success(bs.watch, "crack")
-    success(bs.put, 8192, 0, 300, 'This is a job')
+    run(success, bs.stats)
+    run(success, bs.use, "crack")
+    run(success, bs.watch, "tv")
+    run(success, bs.ignore, "tv")
+    run(success, bs.watch, "crack")
+    run(success, bs.put, 8192, 0, 300, 'This is a job')
     def releaseJob(j):
         id, job=j
         success_print(None)
         return success(bs.release, id, 1024, 0)
-    bs.reserve(1).addCallback(releaseJob)
+    run(bs.reserve, 1, callback=releaseJob)
+    def buryJob(j):
+        id, job=j
+        success_print(None)
+        return success(bs.bury, id, 1024)
+    run(bs.reserve, 1, callback=buryJob, errback=print_cb("r-n-b error"))
+    run(bs.kick, 1)
     def runJob(j):
         id, job=j
         success_print(None)
         return success(bs.delete, id)
-    bs.reserve(1).addCallback(runJob)
-    failure(bs.reserve, 1)
-    listChecker(bs.list_tubes, ['default', 'crack'])
-    listChecker(bs.list_tubes_watched, ['default', 'crack'])
-    valueChecker(bs.used_tube, 'crack')
+    run(bs.reserve, 1, callback=runJob)
+    run(failure, bs.reserve, 1)
+    run(listChecker, bs.list_tubes, ['default', 'crack'])
+    run(listChecker, bs.list_tubes_watched, ['default', 'crack'])
+    run(valueChecker, bs.used_tube, 'crack')
 
-    dl=defer.DeferredList(testDeferreds)
     def done(v):
         sys.stdout.write("\n")
         print "Finished all tests."
@@ -110,7 +125,11 @@ def runCommands(bs):
             for f in failures:
                 print "\t" + `f`
         reactor.stop()
-    dl.addCallback(done)
+
+    coop = task.Cooperator()
+    doneDeferred=defer.Deferred()
+    doneDeferred.addCallback(done)
+    coop.coiterate(runGenerator(), doneDeferred=doneDeferred)
 
 d.addCallback(runCommands)
 
