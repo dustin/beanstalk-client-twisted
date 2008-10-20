@@ -61,6 +61,16 @@ class TimedOut(Exception): pass
 
 class NotFound(Exception): pass
 
+class BadFormat(Exception): pass
+
+class InternalError(Exception): pass
+
+class Draining(Exception): pass
+
+class UnknownCommand(Exception): pass
+
+class OutOfMemory(Exception): pass
+
 class Beanstalk(basic.LineReceiver):
 
     def __init__(self):
@@ -213,6 +223,26 @@ class Beanstalk(basic.LineReceiver):
     def cmd_NOT_FOUND(self):
         cmd = self._current.popleft()
         cmd.fail(NotFound())
+
+    def cmd_BAD_FORMAT(self):
+        cmd = self._current.popleft()
+        cmd.fail(BadFormat())
+
+    def cmd_INTERNAL_ERROR(self):
+        cmd = self._current.popleft()
+        cmd.fail(InternalError())
+
+    def cmd_DRAINING(self):
+        cmd = self._current.popleft()
+        cmd.fail(Draining())
+
+    def cmd_UNKNOWN_COMMAND(self):
+        cmd = self._current.popleft()
+        cmd.fail(UnknownCommand())
+
+    def cmd_OUT_OF_MEMORY(self):
+        cmd = self._current.popleft()
+        cmd.fail(OutOfMemory())
 
     def lineReceived(self, line):
         """

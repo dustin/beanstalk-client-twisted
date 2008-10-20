@@ -1,9 +1,4 @@
 Exceptions:
-  OutOfMemory
-  InternalError
-  Draining
-  BadFormat
-  UnknownCommand
   Buried(int)
   ExpectedCRLF
   JobTooBig
