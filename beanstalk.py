@@ -55,6 +55,8 @@ class Command(object):
         """
         self._deferred.errback(error)
 
+class TimedOut(Exception): pass
+
 class Beanstalk(basic.LineReceiver):
 
     def __init__(self):
@@ -145,6 +147,10 @@ class Beanstalk(basic.LineReceiver):
         self._bufferLength = 0
         cmd.length = self._lenExpected
         self.setRawMode()
+
+    def cmd_TIMED_OUT(self):
+        cmd = self._current.popleft()
+        cmd.fail(TimedOut())
 
     def lineReceived(self, line):
         """
