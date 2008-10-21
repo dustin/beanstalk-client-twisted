@@ -101,11 +101,11 @@ def jobCallbacks(bs):
 
 def runCommands(bs):
     run(success, bs.stats)
-    run(success, bs.use, "crack")
+    run(valueChecker, bs.use, "crack", "crack")
     run(success, bs.stats_tube, "crack")
-    run(success, bs.watch, "tv")
-    run(success, bs.ignore, "tv")
-    run(success, bs.watch, "crack")
+    run(valueChecker, bs.watch, 2, "tv")
+    run(valueChecker, bs.ignore, 1, "tv")
+    run(valueChecker, bs.watch, 2, "crack")
     run(bs.put, 8192, 0, 300, 'This is a job', callback=jobCallbacks(bs))
     run(success, bs.peek_ready)
     def releaseJob(j):
