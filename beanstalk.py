@@ -143,6 +143,9 @@ class Beanstalk(basic.LineReceiver):
     def delete(self, job):
         return self.__cmd('delete', 'delete %d' % job)
 
+    def touch(self, job):
+        return self.__cmd('touch', 'touch %d' % job)
+
     def list_tubes(self):
         return self.__cmd('list-tubes', 'list-tubes')
 
@@ -186,6 +189,8 @@ class Beanstalk(basic.LineReceiver):
     _cmd_KICKED = __int_success
 
     _cmd_DELETED = __null_success
+
+    _cmd_TOUCHED = __null_success
 
     _cmd_RELEASED = __null_success
 

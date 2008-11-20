@@ -120,6 +120,11 @@ def runCommands(bs):
     run(bs.reserve, 1, callback=buryJob, errback=print_cb("r-n-b error"))
     run(success, bs.peek_buried)
     run(bs.kick, 1)
+    def touchJob(j):
+        id, job=j
+        success_print(None)
+        return success(bs.touch, id)
+    run(bs.reserve, 1, callback=touchJob)
     def runJob(j):
         id, job=j
         success_print(None)
