@@ -11,7 +11,7 @@ import beanstalk
 
 def executor(bs, jobid, jobdata):
     print "Running job #%d: %s" % (jobid, jobdata)
-    bs.delete(jobid)
+    bs.touch(jobid).addCallback(lambda x: bs.delete(jobid))
 
 def error_handler(e):
     print "Got an error", e
